@@ -23,38 +23,82 @@ import android.os.IBinder;
 import android.support.annotation.CallSuper;
 import android.util.Log;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  * A base class that produces {@link StreamCard} for the StreamService
  */
 public abstract class StreamProducer {
     private static final String TAG = "StreamProducer";
 
+    protected final Context mContext;
+
+    /**
+     * A queue that holds {@link StreamCard}s that were added before this {@link StreamProducer}
+     * has connected to the {@link StreamService}. After connecting, these cards are posted to
+     * the StreamService.
+     */
+    private final Queue<StreamCard> mQueuedCards = new LinkedList<>();
+
     private StreamService mStreamService;
-    protected Context mContext;
 
     public StreamProducer(Context context) {
         mContext = context;
     }
 
+    /**
+     * Posts the given card to the {@link StreamService} for rendering by stream consumers.
+     *
+     * @return {@code true} if the card was successfully posted. {@code false} is returned if the
+     * {@link StreamService} is not available. The given card will be queued and posted when the
+     * {@link StreamService} becomes available.
+     */
     public final boolean postCard(StreamCard card) {
         if (mStreamService != null) {
             mStreamService.addStreamCard(card);
             return true;
         }
+
         if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "StreamService not found, unable to post card");
+            Log.d(TAG, "StreamService not found, adding card to queue for later addition.");
         }
+
+        mQueuedCards.add(card);
         return false;
     }
 
+    /**
+     * Removes the given card from the {@link StreamService}. If this {@link StreamProducer} has not
+     * connected to the {@link StreamService}, then {@link #mQueuedCards} is checked to see if it
+     * contains the given card.
+     *
+     * @return {@code true} if the card is successfully removed from either the
+     * {@link StreamService} or {@link #mQueuedCards}.
+     */
     public final boolean removeCard(StreamCard card) {
+        if (card == null) {
+            return false;
+        }
+
         if (mStreamService != null) {
             mStreamService.removeStreamCard(card);
             return true;
         }
+
         if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "StreamService not found, unable to remove card");
+            Log.d(TAG, "StreamService not found, checking if it exists in the queue.");
         }
+
+        for (Iterator<StreamCard> iterator = mQueuedCards.iterator(); iterator.hasNext();) {
+            StreamCard queuedCard = iterator.next();
+            if (queuedCard.getType() == card.getType() && queuedCard.getId() == card.getId()) {
+                iterator.remove();
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -81,6 +125,7 @@ public abstract class StreamProducer {
     @CallSuper
     public void stop() {
         mContext.unbindService(mServiceConnection);
+        mQueuedCards.clear();
     }
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -89,6 +134,10 @@ public abstract class StreamProducer {
             StreamService.StreamProducerBinder binder
                     = (StreamService.StreamProducerBinder) service;
             mStreamService = binder.getService();
+
+            while (!mQueuedCards.isEmpty()) {
+                mStreamService.addStreamCard(mQueuedCards.remove());
+            }
         }
 
         @Override

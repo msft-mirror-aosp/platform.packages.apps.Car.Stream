@@ -19,8 +19,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.drawable.VectorDrawable;
 import android.net.Uri;
+import com.android.car.stream.BitmapUtils;
 import com.android.car.stream.R;
 import com.android.car.stream.StreamCard;
 import com.android.car.stream.StreamConstants;
@@ -39,8 +40,8 @@ public class RecentCallConverter {
         builder.setPrimaryText(displayName);
         builder.setSecondaryText(context.getString(R.string.recent_call));
         builder.setDescription(context.getString(R.string.recent_call));
-        Bitmap phoneIcon = BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.ic_phone);
+        Bitmap phoneIcon = BitmapUtils.getBitmap(
+                (VectorDrawable) context.getDrawable(R.drawable.ic_phone));
 
         builder.setPrimaryIcon(phoneIcon);
         builder.setSecondaryIcon(TelecomUtils.createStreamCardSecondaryIcon(context, number));

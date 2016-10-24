@@ -19,10 +19,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.drawable.VectorDrawable;
 import android.telecom.Call;
+import com.android.car.stream.BitmapUtils;
 import com.android.car.stream.CurrentCallExtension;
-
 import com.android.car.stream.R;
 import com.android.car.stream.StreamCard;
 import com.android.car.stream.StreamConstants;
@@ -87,8 +87,8 @@ public class CurrentCallConverter {
         builder.setPrimaryText(displayName);
         builder.setSecondaryText(getCallState(context, callState));
 
-        Bitmap phoneIcon = BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.ic_phone);
+        Bitmap phoneIcon = BitmapUtils.getBitmap(
+                (VectorDrawable) context.getDrawable(R.drawable.ic_phone));
         builder.setPrimaryIcon(phoneIcon);
         builder.setSecondaryIcon(TelecomUtils.createStreamCardSecondaryIcon(context, number));
         builder.setClickAction(dialerPendingIntent);
