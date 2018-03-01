@@ -36,6 +36,7 @@ LOCAL_AAPT_FLAGS += --extra-packages com.android.car.radio.service
 LOCAL_STATIC_JAVA_LIBRARIES += car-radio-service
 
 LOCAL_PACKAGE_NAME := Stream
+LOCAL_PRIVATE_PLATFORM_APIS := true
 
 LOCAL_MODULE_TAGS := optional
 
