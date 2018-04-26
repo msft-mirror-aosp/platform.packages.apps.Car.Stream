@@ -26,14 +26,14 @@ include packages/apps/Car/libs/car-apps-common/car-apps-common.mk
 
 include packages/services/Car/car-support-lib/car-support.mk
 
-LOCAL_STATIC_JAVA_LIBRARIES += android-support-v4
-LOCAL_STATIC_JAVA_LIBRARIES += car-stream-lib
+LOCAL_USE_AAPT2 := true
 
-LOCAL_AAPT_FLAGS += \
-        --auto-add-overlay \
+LOCAL_STATIC_ANDROID_LIBRARIES += \
+    android-support-v4 \
+    car-radio-service
 
-LOCAL_AAPT_FLAGS += --extra-packages com.android.car.radio.service
-LOCAL_STATIC_JAVA_LIBRARIES += car-radio-service
+LOCAL_STATIC_JAVA_LIBRARIES += \
+    car-stream-lib
 
 LOCAL_PACKAGE_NAME := Stream
 LOCAL_PRIVATE_PLATFORM_APIS := true
@@ -48,16 +48,13 @@ LOCAL_PROGUARD_ENABLED := disabled
 LOCAL_DEX_PREOPT := false
 
 # Include support-v7-cardview, if not already included
-ifeq (,$(findstring android-support-v7-cardview,$(LOCAL_STATIC_JAVA_LIBRARIES)))
-LOCAL_RESOURCE_DIR += frameworks/support/v7/cardview/res
-LOCAL_AAPT_FLAGS += --extra-packages android.support.v7.cardview
-LOCAL_STATIC_JAVA_LIBRARIES += android-support-v7-cardview
+ifeq (,$(findstring android-support-v7-cardview,$(LOCAL_STATIC_ANDROID_LIBRARIES)))
+LOCAL_STATIC_ANDROID_LIBRARIES += android-support-v7-cardview
 endif
 
 # Include support-v7-palette, if not already included
-ifeq (,$(findstring android-support-v7-palette,$(LOCAL_STATIC_JAVA_LIBRARIES)))
-LOCAL_AAPT_FLAGS += --extra-packages android.support.v7.palette
-LOCAL_STATIC_JAVA_LIBRARIES += android-support-v7-palette
+ifeq (,$(findstring android-support-v7-palette,$(LOCAL_STATIC_ANDROID_LIBRARIES)))
+LOCAL_STATIC_ANDROID_LIBRARIES += android-support-v7-palette
 endif
 
 # Include android-support-annotations, if not already included
